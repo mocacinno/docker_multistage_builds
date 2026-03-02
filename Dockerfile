@@ -1,4 +1,4 @@
-FROM prereq_toolchain_gcc48 AS builder
+FROM prereq_toolchain_gcc48
 
 WORKDIR /
 RUN wget https://www.openssl.org/source/openssl-0.9.8k.tar.gz && \

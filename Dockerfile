@@ -1,20 +1,16 @@
 FROM prereq_toolchain_gcc48
 WORKDIR /
-RUN wget https://download.gnome.org/sources/pango/1.24/pango-1.24.5.tar.gz
-RUN ls -ltrh
-RUN file pango-1.24.5.tar.gz
-RUN tar -xvf pango-1.24.5.tar.gz
-RUN mv /usr/include/freetype2 /opt/freetype2_bak && \
-    mkdir -p /usr/local/include/freetype1 && \
-    mkdir -p /usr/local/include/freetype
-RUN wget https://github.com/LuaDist/freetype/archive/refs/heads/master.zip && \
-    unzip master.zip
-RUN cp -r /freetype-master/include/freetype/* /usr/local/include/freetype1 && \
-    cp -r /freetype-master/include/*.h /usr/local/include/freetype1 && \
-    cp -r /usr/local/include/freetype1/* /usr/local/include/freetype
-WORKDIR /pango-1.24.5
-RUN CPPFLAGS="-I/usr/local/include/freetype1" ./configure && \
-    make -j"$(($(nproc) + 1))" && \
+RUN wget https://github.com/wxWidgets/wxWidgets/archive/refs/tags/v2.8.9.zip && \
+    unzip v2.8.9.zip
+WORKDIR /wxWidgets-2.8.9
+RUN ./autogen.sh && \
+    find . -type f -exec sed -i 's/GSocket/wxGSocket/g' {} \; && \
+    find . -type f -exec sed -i 's/typedef struct _GSocket/typedef struct _wxGSocket/' {} \; && \
+    find . -type f -exec sed -i 's/class GSocket/class wxGSocket/' {} \; && \
+    CXXFLAGS="-fPIC -fpermissive" CFLAGS="-fPIC -fpermissive" ./configure --enable-unicode --enable-debug --prefix=/usr/local/wxwidgets  --with-gtk --enable-shared --enable-monolithic && \
+    ln -s /usr/lib64/libjpeg.so.8 /usr/lib64/libjpeg8.so && \
+    unlink /usr/lib64/libjpeg.so && \
+    ln -s /usr/lib64/libjpeg.so.8.2.2 /usr/lib64/libjpeg.so && \
+    CXXFLAGS="-fPIC -fpermissive" CFLAGS="-fPIC" make -j"$(($(nproc) + 1))" LDFLAGS="-lpangocairo-1.0 -lX11 -lcairo -ljpeg8" && \
     make install && \
-    mv /opt/freetype2_bak /usr/include/freetype2 && \
-    cp -r /pango-1.24.5/pango/.libs/* /usr/lib64/
+    ldconfig 

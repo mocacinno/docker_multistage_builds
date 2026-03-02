@@ -1,4 +1,4 @@
-FROM registry.suse.com/bci/bci-base:15.7 AS builder
+FROM registry.suse.com/bci/bci-base:15.7
 
 RUN zypper --non-interactive ref && \
     zypper --non-interactive in -y curl ca-certificates
